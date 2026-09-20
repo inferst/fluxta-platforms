@@ -8,15 +8,26 @@ import {
 
 import { AccountsService } from "./accounts/service";
 import { SettingsStore } from "./accounts/store";
+import { BanUserAction } from "./actions/ban-user";
 import { CancelPredictionAction } from "./actions/cancel-prediction";
+import { CancelRaidAction } from "./actions/cancel-raid";
 import { EndPollAction } from "./actions/end-poll";
 import { LockPredictionAction } from "./actions/lock-prediction";
 import { ResolvePredictionAction } from "./actions/resolve-prediction";
 import { ResolveRedemptionAction } from "./actions/resolve-redemption";
+import { RunCommercialAction } from "./actions/run-commercial";
 import { SendMessageAction } from "./actions/send-message";
+import { SendShoutoutAction } from "./actions/send-shoutout";
 import { StartPollAction } from "./actions/start-poll";
 import { StartPredictionAction } from "./actions/start-prediction";
+import { StartRaidAction } from "./actions/start-raid";
+import { TimeoutUserAction } from "./actions/timeout-user";
+import { UnbanUserAction } from "./actions/unban-user";
+import { UntimeoutUserAction } from "./actions/untimeout-user";
 import { UpdateRewardAction } from "./actions/update-reward";
+import { UpdateStreamInfoAction } from "./actions/update-stream-info";
+import type { ChannelApi } from "./channel/api";
+import { ChannelService } from "./channel/service";
 import { OutgoingMessages } from "./chat/outgoing";
 import { ChatSender } from "./chat/sender";
 import { CommandService } from "./commands/service";
@@ -30,6 +41,8 @@ import {
   VIEWER_COUNT_CHANGED_EVENT,
 } from "./events/viewer-count-changed";
 import { readManifestVersion } from "./manifest";
+import type { ModerationApi } from "./moderation/api";
+import { ModerationService } from "./moderation/service";
 import { plugin } from "./plugin";
 import { PollsService } from "./polls/service";
 import { PredictionsService } from "./predictions/service";
@@ -81,6 +94,37 @@ const predictions = new PredictionsService(
 );
 const sender = new ChatSender(accounts, outgoing);
 
+// Spans three of twurple's own namespaces (users, moderation, chat) behind
+// the one narrow shape `ModerationService` asks for.
+const moderationClient = new ApiClient({ authProvider: accounts.authProvider });
+const moderationApi: ModerationApi = {
+  getUserByName: async (login) => {
+    const user = await moderationClient.users.getUserByName(login);
+    return user ? { id: user.id, displayName: user.displayName } : null;
+  },
+  banUser: (broadcaster, data) => moderationClient.moderation.banUser(broadcaster, data),
+  unbanUser: (broadcaster, user) => moderationClient.moderation.unbanUser(broadcaster, user),
+  shoutoutUser: (from, to) => moderationClient.chat.shoutoutUser(from, to),
+};
+const moderation = new ModerationService(() => accounts.userId("broadcaster"), moderationApi);
+
+// Spans four of twurple's own namespaces (channels, games, users, raids)
+// behind the one narrow shape `ChannelService` asks for.
+const channelClient = new ApiClient({ authProvider: accounts.authProvider });
+const channelApi: ChannelApi = {
+  updateChannelInfo: (broadcaster, data) => channelClient.channels.updateChannelInfo(broadcaster, data),
+  getGameByName: (name) => channelClient.games.getGameByName(name),
+  getUserByName: async (login) => {
+    const user = await channelClient.users.getUserByName(login);
+    return user ? { id: user.id, displayName: user.displayName } : null;
+  },
+  startRaid: (from, to) => channelClient.raids.startRaid(from, to),
+  cancelRaid: (from) => channelClient.raids.cancelRaid(from),
+  startChannelCommercial: (broadcaster, length) =>
+    channelClient.channels.startChannelCommercial(broadcaster, length),
+};
+const channel = new ChannelService(() => accounts.userId("broadcaster"), channelApi);
+
 plugin.registerAction(new SendMessageAction(sender));
 plugin.registerAction(new UpdateRewardAction(rewards));
 plugin.registerAction(new ResolveRedemptionAction(rewards));
@@ -90,6 +134,15 @@ plugin.registerAction(new StartPredictionAction(predictions));
 plugin.registerAction(new LockPredictionAction(predictions));
 plugin.registerAction(new ResolvePredictionAction(predictions));
 plugin.registerAction(new CancelPredictionAction(predictions));
+plugin.registerAction(new BanUserAction(moderation));
+plugin.registerAction(new TimeoutUserAction(moderation));
+plugin.registerAction(new UnbanUserAction(moderation));
+plugin.registerAction(new UntimeoutUserAction(moderation));
+plugin.registerAction(new SendShoutoutAction(moderation));
+plugin.registerAction(new UpdateStreamInfoAction(channel));
+plugin.registerAction(new StartRaidAction(channel));
+plugin.registerAction(new CancelRaidAction(channel));
+plugin.registerAction(new RunCommercialAction(channel));
 
 plugin.registerOptions({
   key: "rewards",

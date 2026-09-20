@@ -100,3 +100,94 @@ export type ResolvePredictionSettings = {
    */
   outcome?: string;
 };
+
+/** Twitch's own cap on why a Ban or a Timeout happened. */
+export const MODERATION_REASON_MAX = 500;
+
+/** Twitch's own bounds for a Timeout, in seconds — 14 days at the top. */
+export const TIMEOUT_DURATION_MIN = 1;
+export const TIMEOUT_DURATION_MAX = 1_209_600;
+
+/** Settings of the Ban Twitch User Action. */
+export type BanUserSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+  /** Why the viewer was banned, as a template. Twitch's cap is `MODERATION_REASON_MAX` characters. */
+  reason?: string;
+};
+
+/** Settings of the Timeout Twitch User Action. */
+export type TimeoutUserSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+  /**
+   * How long the timeout lasts, in seconds, as a template. Twitch's bounds
+   * are `TIMEOUT_DURATION_MIN` to `TIMEOUT_DURATION_MAX`.
+   */
+  duration?: string;
+  /** Why the viewer was timed out, as a template. Twitch's cap is `MODERATION_REASON_MAX` characters. */
+  reason?: string;
+};
+
+/** Settings of the Unban Twitch User Action. */
+export type UnbanUserSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+};
+
+/**
+ * Settings of the Untimeout Twitch User Action.
+ *
+ * Identical to `UnbanUserSettings`: Twitch lifts a Timeout the same way it
+ * lifts a Ban, one endpoint for both. Kept as its own name because the two
+ * Actions are, even though the request behind them is not.
+ */
+export type UntimeoutUserSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+};
+
+/** Settings of the Send Twitch Shoutout Action. */
+export type SendShoutoutSettings = {
+  /** The channel to shout out, by login, as a template. */
+  login?: string;
+};
+
+/** Twitch's own cap on how many Tags a channel may carry, and on each Tag's length. */
+export const CHANNEL_TAGS_MAX = 10;
+export const CHANNEL_TAG_MAX = 25;
+
+/** Settings of the Update Stream Info Action. */
+export type UpdateStreamInfoSettings = {
+  /** The stream's new title, as a template. Empty leaves the title alone. */
+  title?: string;
+  /** The new category, by its exact Twitch name, as a template. Empty leaves it alone. */
+  category?: string;
+  /**
+   * The new Tags, comma-separated, as a template. Twitch allows at most
+   * `CHANNEL_TAGS_MAX`, each up to `CHANNEL_TAG_MAX` characters. Empty leaves
+   * the Tags alone.
+   */
+  tags?: string;
+};
+
+/** Settings of the Start Raid Action. */
+export type StartRaidSettings = {
+  /** The channel to raid, by login, as a template. */
+  login?: string;
+};
+
+// The Cancel Raid Action takes no settings: Twitch allows only one raid this
+// Channel can have initiated at a time, so there is nothing for its editor
+// to configure.
+
+/** Twitch's own fixed set of commercial lengths, in seconds. */
+export const COMMERCIAL_LENGTHS = [30, 60, 90, 120, 150, 180] as const;
+
+export type CommercialLength = (typeof COMMERCIAL_LENGTHS)[number];
+
+/** Settings of the Run Commercial Action. */
+export type RunCommercialSettings = {
+  /** How long the commercial runs, in seconds, as a template. Twitch only accepts `COMMERCIAL_LENGTHS`. */
+  length?: string;
+};
