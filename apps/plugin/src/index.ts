@@ -8,14 +8,21 @@ import {
 
 import { AccountsService } from "./accounts/service";
 import { SettingsStore } from "./accounts/store";
+import { AddModeratorAction } from "./actions/add-moderator";
+import { AddVipAction } from "./actions/add-vip";
 import { BanUserAction } from "./actions/ban-user";
 import { CancelPredictionAction } from "./actions/cancel-prediction";
 import { CancelRaidAction } from "./actions/cancel-raid";
+import { ClearChatAction } from "./actions/clear-chat";
+import { DeleteMessageAction } from "./actions/delete-message";
 import { EndPollAction } from "./actions/end-poll";
 import { LockPredictionAction } from "./actions/lock-prediction";
+import { RemoveModeratorAction } from "./actions/remove-moderator";
+import { RemoveVipAction } from "./actions/remove-vip";
 import { ResolvePredictionAction } from "./actions/resolve-prediction";
 import { ResolveRedemptionAction } from "./actions/resolve-redemption";
 import { RunCommercialAction } from "./actions/run-commercial";
+import { SendAnnouncementAction } from "./actions/send-announcement";
 import { SendMessageAction } from "./actions/send-message";
 import { SendShoutoutAction } from "./actions/send-shoutout";
 import { StartPollAction } from "./actions/start-poll";
@@ -24,8 +31,10 @@ import { StartRaidAction } from "./actions/start-raid";
 import { TimeoutUserAction } from "./actions/timeout-user";
 import { UnbanUserAction } from "./actions/unban-user";
 import { UntimeoutUserAction } from "./actions/untimeout-user";
+import { UpdateChatSettingsAction } from "./actions/update-chat-settings";
 import { UpdateRewardAction } from "./actions/update-reward";
 import { UpdateStreamInfoAction } from "./actions/update-stream-info";
+import { WarnUserAction } from "./actions/warn-user";
 import type { ChannelApi } from "./channel/api";
 import { ChannelService } from "./channel/service";
 import { OutgoingMessages } from "./chat/outgoing";
@@ -105,6 +114,20 @@ const moderationApi: ModerationApi = {
   banUser: (broadcaster, data) => moderationClient.moderation.banUser(broadcaster, data),
   unbanUser: (broadcaster, user) => moderationClient.moderation.unbanUser(broadcaster, user),
   shoutoutUser: (from, to) => moderationClient.chat.shoutoutUser(from, to),
+  addModerator: (broadcaster, user) => moderationClient.moderation.addModerator(broadcaster, user),
+  removeModerator: (broadcaster, user) =>
+    moderationClient.moderation.removeModerator(broadcaster, user),
+  addVip: (broadcaster, user) => moderationClient.channels.addVip(broadcaster, user),
+  removeVip: (broadcaster, user) => moderationClient.channels.removeVip(broadcaster, user),
+  deleteChatMessages: (broadcaster, messageId) =>
+    moderationClient.moderation.deleteChatMessages(broadcaster, messageId),
+  warnUser: (broadcaster, user, reason) =>
+    moderationClient.moderation.warnUser(broadcaster, user, reason),
+  sendAnnouncement: (broadcaster, message, color) =>
+    moderationClient.chat.sendAnnouncement(broadcaster, { message, color }),
+  getChatSettings: (broadcaster) => moderationClient.chat.getSettingsPrivileged(broadcaster),
+  updateChatSettings: (broadcaster, data) =>
+    moderationClient.chat.updateSettings(broadcaster, data),
 };
 const moderation = new ModerationService(() => accounts.userId("broadcaster"), moderationApi);
 
@@ -143,6 +166,15 @@ plugin.registerAction(new UpdateStreamInfoAction(channel));
 plugin.registerAction(new StartRaidAction(channel));
 plugin.registerAction(new CancelRaidAction(channel));
 plugin.registerAction(new RunCommercialAction(channel));
+plugin.registerAction(new AddModeratorAction(moderation));
+plugin.registerAction(new RemoveModeratorAction(moderation));
+plugin.registerAction(new AddVipAction(moderation));
+plugin.registerAction(new RemoveVipAction(moderation));
+plugin.registerAction(new ClearChatAction(moderation));
+plugin.registerAction(new DeleteMessageAction(moderation));
+plugin.registerAction(new WarnUserAction(moderation));
+plugin.registerAction(new SendAnnouncementAction(moderation));
+plugin.registerAction(new UpdateChatSettingsAction(moderation));
 
 plugin.registerOptions({
   key: "rewards",

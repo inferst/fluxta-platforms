@@ -18,6 +18,24 @@ export const ENABLEMENT_LABELS: Record<Enablement, string> = {
   toggle: "Toggle",
 };
 
+/**
+ * What an Enablement resolves to against a thing's current state, or
+ * `undefined` for `unchanged` — the caller's own signal to leave whatever
+ * field it would have set alone rather than writing back its current value.
+ */
+export function resolveEnablement(enablement: Enablement, current: boolean): boolean | undefined {
+  switch (enablement) {
+    case "enable":
+      return true;
+    case "disable":
+      return false;
+    case "toggle":
+      return !current;
+    case "unchanged":
+      return undefined;
+  }
+}
+
 /** How a Redemption ends: the viewer got what they paid for, or their points back. */
 export const RESOLUTIONS = ["fulfill", "refund"] as const;
 
@@ -190,4 +208,105 @@ export type CommercialLength = (typeof COMMERCIAL_LENGTHS)[number];
 export type RunCommercialSettings = {
   /** How long the commercial runs, in seconds, as a template. Twitch only accepts `COMMERCIAL_LENGTHS`. */
   length?: string;
+};
+
+/** Settings of the Add Moderator Action. */
+export type AddModeratorSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+};
+
+/** Settings of the Remove Moderator Action. */
+export type RemoveModeratorSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+};
+
+/** Settings of the Add VIP Action. */
+export type AddVipSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+};
+
+/** Settings of the Remove VIP Action. */
+export type RemoveVipSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+};
+
+// The Clear Chat Action takes no settings: it acts on the whole Channel at
+// once, so there is nothing to pick.
+
+/** Settings of the Delete Message Action. */
+export type DeleteMessageSettings = {
+  /** The message's id, as a template — typically referenced from a Chat Message or Command Triggered Event. */
+  messageId?: string;
+};
+
+/** Settings of the Warn User Action. */
+export type WarnUserSettings = {
+  /** The viewer's login, as a template — typed by hand or referenced from an Event. */
+  login?: string;
+  /** Shown to the viewer, explaining the warning. Twitch requires one. */
+  reason?: string;
+};
+
+/** Twitch's own cap on an Announcement's length. */
+export const ANNOUNCEMENT_MESSAGE_MAX = 500;
+
+/** The colours Twitch highlights an Announcement with. */
+export const ANNOUNCEMENT_COLORS = ["primary", "blue", "green", "orange", "purple"] as const;
+
+export type AnnouncementColor = (typeof ANNOUNCEMENT_COLORS)[number];
+
+export const ANNOUNCEMENT_COLOR_LABELS: Record<AnnouncementColor, string> = {
+  primary: "Channel's accent colour",
+  blue: "Blue",
+  green: "Green",
+  orange: "Orange",
+  purple: "Purple",
+};
+
+/** Settings of the Send Announcement Action. */
+export type SendAnnouncementSettings = {
+  /** As a template. Twitch's cap is `ANNOUNCEMENT_MESSAGE_MAX` characters; longer is truncated, not refused. */
+  message?: string;
+  color?: AnnouncementColor;
+};
+
+/** Twitch's own bounds for Slow Mode's wait time, in seconds. */
+export const SLOW_MODE_DELAY_MIN = 3;
+export const SLOW_MODE_DELAY_MAX = 120;
+
+/** Twitch's own bounds for Follower-Only Mode's delay, in minutes — 3 months at the top. */
+export const FOLLOWER_ONLY_MODE_DELAY_MIN = 0;
+export const FOLLOWER_ONLY_MODE_DELAY_MAX = 129_600;
+
+/** Twitch's own fixed set of Non-Moderator Chat Delay lengths, in seconds. */
+export const NON_MODERATOR_CHAT_DELAYS = [2, 4, 6] as const;
+
+export type NonModeratorChatDelay = (typeof NON_MODERATOR_CHAT_DELAYS)[number];
+
+/**
+ * Settings of the Update Chat Settings Action.
+ *
+ * Each mode is independently optional: `unchanged` (or left out) leaves that
+ * mode as it is. Giving a mode's delay implies turning that mode on with it —
+ * there is no way to change a delay without also being explicit that the
+ * mode should be on, so asking for a delay is treated as asking for both.
+ */
+export type UpdateChatSettingsSettings = {
+  slowMode?: Enablement;
+  /** Seconds between messages, as a template. Twitch's bounds are `SLOW_MODE_DELAY_MIN` to `SLOW_MODE_DELAY_MAX`. */
+  slowModeDelay?: string;
+  followerOnlyMode?: Enablement;
+  /** Minutes a viewer must have followed, as a template. Twitch's bounds are `FOLLOWER_ONLY_MODE_DELAY_MIN` to `FOLLOWER_ONLY_MODE_DELAY_MAX`. */
+  followerOnlyModeDelay?: string;
+  subscriberOnlyMode?: Enablement;
+  emoteOnlyMode?: Enablement;
+  /** Twitch's own name for "no two messages with the same text in a row." */
+  uniqueChatMode?: Enablement;
+  nonModeratorChatDelay?: Enablement;
+  /** Seconds messages are delayed, as a template. Twitch only accepts `NON_MODERATOR_CHAT_DELAYS`. */
+  nonModeratorChatDelaySeconds?: string;
 };

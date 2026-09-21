@@ -45,6 +45,24 @@ const BROADCASTER_SCOPES = [
   "channel:manage:raids",
   // Run Commercial Action.
   "channel:edit:commercial",
+  // User Banned, User Timed Out and User Unbanned Events. A scope of its
+  // own, distinct from `moderator:manage:banned_users` above: Twitch answers
+  // these two Events with an older scope it has not carried over.
+  "channel:moderate",
+  // Moderator Added/Removed and User Warned Events.
+  "moderation:read",
+  // VIP Added/Removed Events, and the Add/Remove VIP Actions.
+  "channel:manage:vips",
+  // Add/Remove Moderator Actions.
+  "channel:manage:moderators",
+  // Clear Chat and Delete Message Actions.
+  "moderator:manage:chat_messages",
+  // Warn User Action.
+  "moderator:manage:warnings",
+  // Send Announcement Action.
+  "moderator:manage:announcements",
+  // Update Chat Settings Action.
+  "moderator:manage:chat_settings",
 ];
 
 const BOT_SCOPES = ["user:read:chat", "user:write:chat", "user:bot"];
