@@ -27,7 +27,7 @@ import type { SettingsStore, StoredAccount } from "./store";
 /** Refresh this long before a token actually expires. */
 const REFRESH_MARGIN_MS = 5 * 60 * 1000;
 
-/** How each Account slot is named in the desktop's External Connections list. */
+/** How each Account slot is named in the desktop's connection indicator (`setConnections`). */
 const ROLE_TITLE: Record<AccountRole, string> = {
   broadcaster: "Broadcaster",
   bot: "Bot",
