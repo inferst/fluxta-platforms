@@ -6,9 +6,10 @@ redemption, a poll) into Fluxta Events, and exposes Actions that act back on
 the platform. Twitch is the first Platform; YouTube and Kick are expected to
 follow.
 
-Fluxta's own vocabulary — Event, Event Source, Event Field, Action, Run
-Variable, Value Source, Live Tile — is defined in the host's glossary and is not
-redefined here.
+Fluxta's own words — Event, Event Source, Event Field, Action, Run Variable,
+Value Source — mean what Fluxta's
+[Terminology](https://fluxta.app/docs/plugins/getting-started/terminology)
+says and are not redefined here.
 
 ## Platforms and identity
 
